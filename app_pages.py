@@ -79,11 +79,6 @@ class BasePage(tk.Frame):
 
         self.back_button = tk.Button(top_frame, text="返回主页", command=self.controller.show_home_page)
         self.back_button.pack(side=tk.LEFT)
-
-        # 移除联网搜索相关代码
-        # self.web_search_var = tk.BooleanVar()
-        # self.web_search_check = tk.Checkbutton(top_frame, text="联网搜索", variable=self.web_search_var)
-        # self.web_search_check.pack(side=tk.LEFT, padx=5)
         
         # 添加敏感词库按钮
         self.sensitive_btn = tk.Button(top_frame, text="敏感词库", command=self.open_sensitive_words_manager)
@@ -743,7 +738,7 @@ class MultiAgentPage(BasePage):
                 messages = [{"role": "system", "content": agent_b_persona}, {"role": "user",
                                                                              "content": f"话题是'{topic}'。刚刚辩手A说：'{agent_a_response}'。请你对此进行反驳。"}]
 
-                self.output.insert(tk.END, f"辩手B: ")
+                self.output.insert(tk.END, f"\n辩手B: ")
                 agent_b_response = ""
                 for chunk in self.controller.api_client.get_response_stream(messages, temperature, stop_event):
                     # 修改：实时过滤辩手B的回应
@@ -941,9 +936,8 @@ class CodeGenPage(BasePage):
             self.stop_button.config(state=tk.DISABLED)
             self.save_button.config(state=tk.NORMAL)
 
-
     def save_code(self):
-        # 获取当前选择的语言
+    # 获取当前选择的语言
         language = self.lang_var.get()
         
         # 定义语言对应的文件扩展名映射
@@ -963,12 +957,22 @@ class CodeGenPage(BasePage):
         
         # 提取代码块（如果存在）
         import re
-        code_block_pattern = re.compile(r'```([a-z]*)\n([\s\S]*?)```', re.MULTILINE)
+        # 修改：增强正则表达式，更灵活地匹配语言标识和代码块
+        code_block_pattern = re.compile(r'```\s*([a-z\+]*)\s*\n([\s\S]*?)```', re.IGNORECASE | re.MULTILINE)
         matches = code_block_pattern.findall(code_content)
         
         # 如果找到代码块，使用第一个代码块的内容
         if matches:
-            code_content = matches[0][1]  # 提取代码部分，忽略语言标识
+            # 尝试找到与所选语言匹配的代码块
+            language_matches = [m for m in matches if self._is_language_match(m[0], language)]
+            if language_matches:
+                code_content = language_matches[0][1]  # 提取代码部分
+            else:
+                # 如果没有找到匹配的语言，使用第一个代码块
+                code_content = matches[0][1]
+        else:
+            # 如果没有找到代码块，使用完整内容
+            pass
         
         # 打开文件对话框
         file_path = filedialog.asksaveasfilename(
@@ -985,6 +989,22 @@ class CodeGenPage(BasePage):
                 messagebox.showinfo("成功", f"代码已成功保存到: {file_path}")
             except Exception as e:
                 messagebox.showerror("错误", f"保存文件时出错: {str(e)}")
+
+    def _is_language_match(self, code_block_lang, selected_lang):
+        """检查代码块语言标识是否与所选语言匹配"""
+        # 语言映射表，处理不同表示方式
+        lang_map = {
+            "Python": ["python", "py"],
+            "JavaScript": ["javascript", "js"],
+            "Java": ["java"],
+            "C++": ["c++", "cpp", "cxx"],
+            "SQL": ["sql"]
+        }
+        
+        # 获取所选语言的所有可能标识
+        valid_ids = lang_map.get(selected_lang, [])
+        # 如果代码块语言标识在有效标识列表中，或者没有语言标识但用户选择了该语言
+        return code_block_lang.lower() in valid_ids or (not code_block_lang and selected_lang == "C++")
 
     def upload_file(self):
         """上传文件附件"""
