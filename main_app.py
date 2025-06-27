@@ -6,7 +6,7 @@ from sensitive_word_filter import SensitiveWordFilter
 class MainApp(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("（多模态）大语言模型应用开发")
+        self.title("Ai-Agent")
         self.geometry("800x600")
 
         try:
