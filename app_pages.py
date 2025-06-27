@@ -7,7 +7,8 @@ from memory import ConversationMemory
 from tkinter import filedialog
 from tkinter.scrolledtext import ScrolledText
 import base64
-from file_processor import extract_text_from_file  # 仅保留文件处理功能
+from file_processor import extract_text_from_file
+import sensitive_word_filter
 
 class SensitiveWordFilter:
     """敏感词过滤类，负责加载、管理和过滤敏感词"""
@@ -775,6 +776,7 @@ class CodeGenPage(BasePage):
         super().__init__(parent, controller)
         self.stop_event = None
         self.attachments = []  # 存储附件信息
+        self.is_first_request = True   #来记录刷新状态
 
         pe_frame = tk.LabelFrame(self, text="Prompt Engineering 选项", padx=10, pady=10)
         pe_frame.pack(pady=10, padx=10, fill=tk.X)
@@ -833,11 +835,24 @@ class CodeGenPage(BasePage):
         self.output = scrolledtext.ScrolledText(self, width=80, height=15, font=("Courier New", 10))
         self.output.pack(pady=10, padx=10, expand=True, fill=tk.BOTH)
 
+    def refresh_page(self):
+        """刷新页面：清空输出、附件和输入框，但保留用户设置"""
+        self.output.delete("1.0", tk.END)
+        self.entry.delete(0, tk.END)
+        self.attachments = []
+        self.attachments_listbox.delete(0, tk.END)
+        self.save_button.config(state=tk.DISABLED)
+
     def start_response_thread(self):
         request = self.entry.get()
         if not request and not self.attachments:
             messagebox.showwarning("警告", "请输入代码生成需求或添加附件。")
             return
+
+        if not self.is_first_request:
+            self.refresh_page()
+        else:
+            self.is_first_request = False
 
         # 过滤敏感词
         filtered_request, contains_sensitive = self.sensitive_filter.filter_text(request)
