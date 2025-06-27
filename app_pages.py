@@ -500,8 +500,8 @@ class ChatPage(BasePage):
                 full_question += f"\n附件 {i+1}: 文件 '{attachment['filename']}' 的内容:\n"
                 # 限制内容长度，避免过长
                 content = attachment['content']
-                if len(content) > 1000:
-                    content = content[:1000] + "..."
+                if len(content) > 2000:
+                    content = content[:2000] + "..."
                 full_question += f"{content}\n"
 
         self.output.insert(tk.END, f"\n\n您: {full_question}\nAI: ")
@@ -630,8 +630,8 @@ class MultiAgentPage(BasePage):
                 full_topic += f"\n附件 {i+1}: 文件 '{attachment['filename']}' 的内容:\n"
                 # 限制内容长度，避免过长
                 content = attachment['content']
-                if len(content) > 1000:
-                    content = content[:1000] + "..."
+                if len(content) > 2000:
+                    content = content[:2000] + "..."
                 full_topic += f"{content}\n"
 
         self.output.delete(1.0, tk.END)
@@ -862,8 +862,8 @@ class CodeGenPage(BasePage):
                 full_request += f"\n附件 {i+1}: 文件 '{attachment['filename']}' 的内容:\n"
                 # 限制内容长度，避免过长
                 content = attachment['content']
-                if len(content) > 1000:
-                    content = content[:1000] + "..."
+                if len(content) > 2000:
+                    content = content[:2000] + "..."
                 full_request += f"{content}\n"
 
         self.output.insert(tk.END, f"\n\n> 用户需求: {full_request}\n\n")
@@ -906,8 +906,8 @@ class CodeGenPage(BasePage):
                     full_request_parts.append(f"\n附件 {i+1}: 文件 '{attachment['filename']}' 的内容:")
                     # 限制内容长度，避免过长
                     content = attachment['content']
-                    if len(content) > 1000:
-                        content = content[:1000] + "..."
+                    if len(content) > 2000:
+                        content = content[:2000] + "..."
                     full_request_parts.append(content)
                 
             final_request = "\n".join(full_request_parts)
