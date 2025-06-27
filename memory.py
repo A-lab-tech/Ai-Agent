@@ -67,7 +67,7 @@ class ConversationMemory:
             del self.conversations[conversation_id]
             return True
         return False
-
+    
     def export_to_markdown(self, conversation_id, filename):
         """导出对话到Markdown文件"""
         if conversation_id not in self.conversations:
@@ -79,7 +79,15 @@ class ConversationMemory:
             f.write(f"**创建时间**: {self.conversations[conversation_id]['created_at']}\n\n")
             for msg in messages:
                 f.write(f"## {msg['role']} ({msg['timestamp']})\n\n")
-                f.write(f"{msg['content']}\n\n")
+                
+                # 替换LaTeX公式标记
+                content = msg['content']
+                content = content.replace(r'\(', '$')
+                content = content.replace(r'\)', '$')
+                content = content.replace(r'\[', '$$')
+                content = content.replace(r'\]', '$$')
+                
+                f.write(f"{content}\n\n")
         return True
 
     def get_all_conversations(self):
